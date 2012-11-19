@@ -1,7 +1,8 @@
 
 (ns jenko.core
   (:require [clj-http.client :as client]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [clojure.xml :as xml]))
 
 (def color-fail "red")
 
@@ -16,17 +17,32 @@
   (json/parse-string str true))
 
 (defn fetch [url]
-  (let [res (client/get
-		      (format "%s%s" JENKINS_URL url)
-		    	{:basic-auth [JENKINS_USER JENKINS_TOKEN]})]
-    (parse-string (:body res))))
+  (client/get
+	(format "%s%s" JENKINS_URL url)
+	{:basic-auth [JENKINS_USER JENKINS_TOKEN]}))
 
-(defn jobs []
-  (:jobs (fetch "/api/json")))
+(def fetch-body
+  (comp :body fetch))
+
+(def fetch-json
+  (comp parse-string fetch-body))
+
+(def fetch-xml
+  (comp xml/parse fetch-body))
 
 (defn is-failing [job]
   (= color-fail (:color job)))
 
+(defn job-config [job-name]
+  (fetch-xml (format "/job/%s/config.xml" job-name)))
+
+;; Public
+;; ------
+
+(defn jobs []
+  (:jobs (fetch-json "/api/json")))
+
 (defn failing-jobs []
   (->> (jobs)
        (filter is-failing)))
+
