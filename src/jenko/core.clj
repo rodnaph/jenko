@@ -5,10 +5,7 @@
             [cheshire.core :as json]
             [clojure.xml :as xml]))
 
-(def color-fail "red")
-
-(defn env [var]
-  (System/getenv var))
+(def env #(System/getenv %))
 
 (def JENKINS_URL (env "JENKINS_URL"))
 (def JENKINS_USER (env "JENKINS_USER"))
@@ -38,7 +35,7 @@
         fetch-body))
 
 (defn is-failing [job]
-  (= color-fail (:color job)))
+  (= "red" (:color job)))
 
 ;; Public
 ;; ------
@@ -52,3 +49,10 @@
 
 (defn job-config [job-name]
   (fetch-xml (format "/job/%s/config.xml" job-name)))
+
+(defn copy-job
+  ([from to] (copy-job from to identity))
+  ([from to mutator]
+	(xml/emit
+      (->> (job-config "scotam-webapp-master")
+           (mutator)))))
