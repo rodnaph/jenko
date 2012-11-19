@@ -1,5 +1,6 @@
 
 (ns jenko.core
+  (:import java.io.ByteArrayInputStream)
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
             [clojure.xml :as xml]))
@@ -27,14 +28,17 @@
 (def fetch-json
   (comp parse-string fetch-body))
 
+(defn string2stream [string]
+  (ByteArrayInputStream.
+    (.getBytes (.trim string))))
+
 (def fetch-xml
-  (comp xml/parse fetch-body))
+  (comp xml/parse
+        string2stream
+        fetch-body))
 
 (defn is-failing [job]
   (= color-fail (:color job)))
-
-(defn job-config [job-name]
-  (fetch-xml (format "/job/%s/config.xml" job-name)))
 
 ;; Public
 ;; ------
@@ -46,3 +50,5 @@
   (->> (jobs)
        (filter is-failing)))
 
+(defn job-config [job-name]
+  (fetch-xml (format "/job/%s/config.xml" job-name)))
