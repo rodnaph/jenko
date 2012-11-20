@@ -1,7 +1,8 @@
 
 (ns jenko.core
   (:import java.io.ByteArrayInputStream)
-  (:require [clj-http.client :as client]
+  (:require [clojure.string :as string]
+            [clj-http.client :as client]
             [cheshire.core :as json]
             [clojure.xml :as xml]))
 
@@ -37,12 +38,28 @@
 (defn is-failing [job]
   (= "red" (:color job)))
 
+(defn matches-job
+  "Returns true if predicate matches job"
+  [predicate job]
+  (let [a (string/lower-case predicate)
+        b (string/lower-case (:name job))]
+  (boolean (= a b))))
+
 ;; Public
 ;; ------
 
 (defn jobs []
   (:jobs (fetch-json "/api/json")))
 
+(defn job 
+  "Fetch information about a single job"
+  [job-name]
+  (->> (jobs)
+       (filter (partial matches-job job-name))
+       first))
+
+(def job-url (comp :url job))
+ 
 (defn failing-jobs []
   (->> (jobs)
        (filter is-failing)))
