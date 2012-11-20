@@ -53,9 +53,9 @@
 
 (defn job 
   "Fetch information about a single job"
-  [j]
+  [job-name]
   (->> (jobs)
-       (filter (partial matches-job j))
+       (filter (partial matches-job job-name))
        first))
 
 (def job-url (comp :url job))
