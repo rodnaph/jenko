@@ -7,16 +7,20 @@
 
 (def env #(System/getenv %))
 
-(def JENKINS_URL (env "JENKINS_URL"))
-(def JENKINS_USER (env "JENKINS_USER"))
-(def JENKINS_TOKEN (env "JENKINS_TOKEN"))
+(def ^{:dynamic true} JENKINS_URL (env "JENKINS_URL"))
+(def ^{:dynamic true} JENKINS_USER (env "JENKINS_USER"))
+(def ^{:dynamic true} JENKINS_TOKEN (env "JENKINS_TOKEN"))
 
 (defn parse-string [str]
   (json/parse-string str true))
 
-(defn fetch [url]
+(defn url [resource params]
+  (format "%s%s" JENKINS_URL
+    (format resource params)))
+
+(defn fetch [path & params]
   (client/get
-	(format "%s%s" JENKINS_URL url)
+    (apply url (cons path params))
 	{:basic-auth [JENKINS_USER JENKINS_TOKEN]}))
 
 (def fetch-body
@@ -37,6 +41,25 @@
 (defn is-failing [job]
   (= "red" (:color job)))
 
+(defmacro ^{:doc "Allows making calls to jenkins with the specified
+  connection details.
+
+    (def cnn {:url \"http://localhost\"
+              :user \"user\"
+              :token \"tokenhere\"})
+
+  And then pass these to the macro.
+
+    (with-jenkins cnn (jobs))
+
+  Uses bindings, so thread local.
+"}
+  with-jenkins [cnn & body]
+  `(binding [JENKINS_URL (:url ~cnn)
+             JENKINS_USER (:user ~cnn)
+             JENKINS_TOKEN (:token ~cnn)]
+     (doall ~@body)))
+
 ;; Public
 ;; ------
 
@@ -46,6 +69,9 @@
 (defn failing-jobs []
   (->> (jobs)
        (filter is-failing)))
+
+(defn job-info [name]
+  (fetch-json "/job/%s/api/json" name))
 
 (defn job-config [job-name]
   (fetch-xml (format "/job/%s/config.xml" job-name)))
