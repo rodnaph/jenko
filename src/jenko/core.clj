@@ -65,6 +65,9 @@
 ;; Public
 ;; ------
 
+(defn views []
+  (:views (fetch-json "/api/json")))
+
 (defn jobs []
   (:jobs (fetch-json "/api/json")))
 
