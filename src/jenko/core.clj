@@ -73,7 +73,7 @@
        (filter is-failing)))
 
 (defn jobs-in-view [name]
-  (:jobs (fetch-json "/view/%s/api/json")))
+  (:jobs (fetch-json "/view/%s/api/json" name)))
 
 (defn job-info [name]
   (fetch-json "/job/%s/api/json" name))

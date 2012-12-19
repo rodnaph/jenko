@@ -1,5 +1,5 @@
 
-(defproject jenko "0.1.1"
+(defproject jenko "0.1.2"
   :description "Clojure helpers for Jenkins"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-http "0.5.8"]
