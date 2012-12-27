@@ -88,5 +88,5 @@
   (let [config (job-config name)
         builders (html/select config [:builders :> :*])
         publishers (html/select config [:publishers :> :*])]
-    (map :tag (concat builders publishers))))
+    (concat builders publishers)))
 
