@@ -1,6 +1,7 @@
 
 (ns jenko.core
   (:import java.io.ByteArrayInputStream)
+  (:use [ring.util.codec :only [url-encode]])
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
             [clojure.xml :as xml]
@@ -15,14 +16,15 @@
 (defn parse-string [str]
   (json/parse-string str true))
 
-(defn url [resource & [params]]
+(defn url [resource params]
   (format "%s%s" JENKINS_URL
-    (format resource params)))
+    (apply format
+      (cons resource (map url-encode params)))))
 
-(defn fetch [path & params]
+(defn fetch [resource & params]
   (client/get
-    (apply url (cons path params))
-	{:basic-auth [JENKINS_USER JENKINS_TOKEN]}))
+    (url resource params)
+	  {:basic-auth [JENKINS_USER JENKINS_TOKEN]}))
 
 (def fetch-body
   (comp :body fetch))
