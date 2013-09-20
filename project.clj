@@ -1,5 +1,5 @@
 
-(defproject jenko "0.2.0"
+(defproject rodnaph/jenko "0.2.0"
   :description "Clojure helpers for Jenkins"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [ring "1.1.6"]
